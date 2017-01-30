@@ -79,22 +79,17 @@ else:
     IP = args[0]
 
 # assign params to variables
-num_of_params = 0
 for opt, arg in opts:
     if opt == "-h":
         print HELP_MSG
     elif opt == "-u":
         AVP_USERNAME = arg
-        num_of_params += 1
     elif opt == "-p":
         PASS = arg
-        num_of_params += 1
     elif opt == "-s":
         SHARED_KEY = arg
-        num_of_params += 1
     elif opt == "-P":
         PORT = arg
-        num_of_params += 1
     else:
         print opt + " is not recognized" # shouldn't be possible. getopt should prevent this
 
