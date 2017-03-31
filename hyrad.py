@@ -53,7 +53,7 @@ def enc_pass(shared_key, authenticator, password):
 # parse arguments
 parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, 
     description=textwrap.dedent('''\
-        %sRadius Fuzzer - v0.1
+        %sHyRad - v0.1
         An utility tool to brute force authentication service using Radius protocol.
         As many Radius protocol would lock accounts out after a limited number of tries,
         this tool focuses on trying one password against a list of users to prevent accidental mass lockout.%s
