@@ -91,7 +91,7 @@ parser.add_argument('--userlist', dest="userlist", help="The list of users to be
 parser.add_argument('-p', '--password', dest="password", help="The list of password to be used.")
 parser.add_argument('--passlist', dest="passlist", help="The list of passwords to be tried.")
 parser.add_argument('-s', '--secret', dest="secret", help="Required. The shared secret to be used", required=True)
-parser.add_argument('-t', '--thread', dest="thread", help="The number of threads to be used", default=4)
+parser.add_argument('-t', '--thread', dest="thread", help="The number of threads to be used. Default 4", default=4)
 
 args = parser.parse_args()
 
